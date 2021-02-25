@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 public class RequisitionBuilder {
 
-    public static ResultActions postRequisition(String url, Object content, ObjectMapper objectMapper, MockMvc mockMvc) throws Exception {
+    public static ResultActions postRequest(String url, Object content, ObjectMapper objectMapper, MockMvc mockMvc) throws Exception {
         return mockMvc.perform(post(url)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(content, objectMapper)));
