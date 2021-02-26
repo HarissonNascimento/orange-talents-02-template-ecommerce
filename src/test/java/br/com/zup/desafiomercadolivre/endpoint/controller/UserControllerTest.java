@@ -37,7 +37,7 @@ import static org.springframework.http.HttpStatus.*;
 @DisplayName("User Controller Test")
 class UserControllerTest {
 
-    private final String USER_REGISTER_NEW = "/user/register-new";
+    private final String URL_USER_REGISTER_NEW = "/user/register-new";
 
     @Autowired
     MockMvc mockMvc;
@@ -53,7 +53,7 @@ class UserControllerTest {
     void createNewUser_Return200StatusCodeAndPersistNewUser_IfGivenValidUser() throws Exception {
         UserPostRequestBody requestBody = new UserPostRequestBody("test@email", "testPassword");
 
-        ResultActions resultActions = postRequest(USER_REGISTER_NEW, requestBody, objectMapper, mockMvc);
+        ResultActions resultActions = postRequest(URL_USER_REGISTER_NEW, requestBody, objectMapper, mockMvc);
 
         assertEquals(OK.value(), resultActions.andReturn().getResponse().getStatus());
 
@@ -71,7 +71,7 @@ class UserControllerTest {
     void createNewUser_Return400StatusCodeAndDontPersistNewUser_IfGivenInvalidUser() throws Exception {
         UserPostRequestBody requestBody = new UserPostRequestBody("", "");
 
-        ResultActions resultActions = postRequest(USER_REGISTER_NEW, requestBody, objectMapper, mockMvc);
+        ResultActions resultActions = postRequest(URL_USER_REGISTER_NEW, requestBody, objectMapper, mockMvc);
 
         assertEquals(BAD_REQUEST.value(), resultActions.andReturn().getResponse().getStatus());
 
@@ -127,7 +127,7 @@ class UserControllerTest {
     void createNewUser_ReturnNotFutureDate_WhenSuccessful() throws Exception {
         UserPostRequestBody requestBody = new UserPostRequestBody("test@email", "testPassword");
 
-        ResultActions resultActions = postRequest(USER_REGISTER_NEW, requestBody, objectMapper, mockMvc);
+        ResultActions resultActions = postRequest(URL_USER_REGISTER_NEW, requestBody, objectMapper, mockMvc);
 
         assertEquals(OK.value(), resultActions.andReturn().getResponse().getStatus());
 
@@ -138,7 +138,7 @@ class UserControllerTest {
     }
 
     private void assertBadRequestInvalidUser(UserPostRequestBody requestBody) throws Exception {
-        ResultActions resultActions = postRequest(USER_REGISTER_NEW, requestBody, objectMapper, mockMvc);
+        ResultActions resultActions = postRequest(URL_USER_REGISTER_NEW, requestBody, objectMapper, mockMvc);
 
         assertEquals(BAD_REQUEST.value(), resultActions.andReturn().getResponse().getStatus());
 
