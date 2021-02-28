@@ -2,7 +2,6 @@ package br.com.zup.desafiomercadolivre.endpoint.controller;
 
 import br.com.zup.desafiomercadolivre.model.domain.User;
 import br.com.zup.desafiomercadolivre.model.request.UserPostRequestBody;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,15 +44,12 @@ class UserControllerTest {
     @PersistenceContext
     EntityManager entityManager;
 
-    @Autowired
-    ObjectMapper objectMapper;
-
     @Test
     @DisplayName("Create new user, return status code 200 and persist new user in database if given valid user")
     void createNewUser_Return200StatusCodeAndPersistNewUser_IfGivenValidUser() throws Exception {
         UserPostRequestBody requestBody = new UserPostRequestBody("test@email", "testPassword");
 
-        ResultActions resultActions = postRequest(URL_USER_REGISTER_NEW, requestBody, objectMapper, mockMvc);
+        ResultActions resultActions = postRequest(URL_USER_REGISTER_NEW, requestBody, mockMvc);
 
         assertEquals(OK.value(), resultActions.andReturn().getResponse().getStatus());
 
@@ -71,7 +67,7 @@ class UserControllerTest {
     void createNewUser_Return400StatusCodeAndDontPersistNewUser_IfGivenInvalidUser() throws Exception {
         UserPostRequestBody requestBody = new UserPostRequestBody("", "");
 
-        ResultActions resultActions = postRequest(URL_USER_REGISTER_NEW, requestBody, objectMapper, mockMvc);
+        ResultActions resultActions = postRequest(URL_USER_REGISTER_NEW, requestBody, mockMvc);
 
         assertEquals(BAD_REQUEST.value(), resultActions.andReturn().getResponse().getStatus());
 
@@ -127,7 +123,7 @@ class UserControllerTest {
     void createNewUser_ReturnNotFutureDate_WhenSuccessful() throws Exception {
         UserPostRequestBody requestBody = new UserPostRequestBody("test@email", "testPassword");
 
-        ResultActions resultActions = postRequest(URL_USER_REGISTER_NEW, requestBody, objectMapper, mockMvc);
+        ResultActions resultActions = postRequest(URL_USER_REGISTER_NEW, requestBody, mockMvc);
 
         assertEquals(OK.value(), resultActions.andReturn().getResponse().getStatus());
 
@@ -138,7 +134,7 @@ class UserControllerTest {
     }
 
     private void assertBadRequestInvalidUser(UserPostRequestBody requestBody) throws Exception {
-        ResultActions resultActions = postRequest(URL_USER_REGISTER_NEW, requestBody, objectMapper, mockMvc);
+        ResultActions resultActions = postRequest(URL_USER_REGISTER_NEW, requestBody, mockMvc);
 
         assertEquals(BAD_REQUEST.value(), resultActions.andReturn().getResponse().getStatus());
 

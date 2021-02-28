@@ -2,7 +2,6 @@ package br.com.zup.desafiomercadolivre.endpoint.controller;
 
 import br.com.zup.desafiomercadolivre.model.domain.Category;
 import br.com.zup.desafiomercadolivre.model.request.CategoryPostRequestBody;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,15 +42,12 @@ class CategoryControllerTest {
     @PersistenceContext
     EntityManager entityManager;
 
-    @Autowired
-    ObjectMapper objectMapper;
-
     @Test
     @DisplayName("Create new mother category, return 200 status code and persist new mother category if given valid mother category")
     void createNewCategory_Return200StatusCodeAndPersistNewMotherCategory_IfGivenValidMotherCategory() throws Exception {
         CategoryPostRequestBody requestBody = new CategoryPostRequestBody("Mother Category", null);
 
-        ResultActions resultActions = postRequest(URL_CATEGORY_REGISTER_NEW, requestBody, objectMapper, mockMvc);
+        ResultActions resultActions = postRequest(URL_CATEGORY_REGISTER_NEW, requestBody, mockMvc);
 
         assertEquals(OK.value(), resultActions.andReturn().getResponse().getStatus());
 
@@ -74,7 +70,7 @@ class CategoryControllerTest {
 
         CategoryPostRequestBody requestBody = new CategoryPostRequestBody("Child Category", motherCategory.getId());
 
-        ResultActions resultActions = postRequest(URL_CATEGORY_REGISTER_NEW, requestBody, objectMapper, mockMvc);
+        ResultActions resultActions = postRequest(URL_CATEGORY_REGISTER_NEW, requestBody, mockMvc);
 
         assertEquals(OK.value(), resultActions.andReturn().getResponse().getStatus());
 
@@ -125,7 +121,7 @@ class CategoryControllerTest {
     }
 
     private void assertBadRequestInvalidCategory(CategoryPostRequestBody requestBody) throws Exception {
-        ResultActions resultActions = postRequest(URL_CATEGORY_REGISTER_NEW, requestBody, objectMapper, mockMvc);
+        ResultActions resultActions = postRequest(URL_CATEGORY_REGISTER_NEW, requestBody, mockMvc);
 
         assertEquals(BAD_REQUEST.value(), resultActions.andReturn().getResponse().getStatus());
 

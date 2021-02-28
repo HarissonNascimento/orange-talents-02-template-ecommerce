@@ -10,13 +10,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 public class RequisitionBuilder {
 
-    public static ResultActions postRequest(String url, Object content, ObjectMapper objectMapper, MockMvc mockMvc) throws Exception {
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    public static ResultActions postRequest(String url, Object content, MockMvc mockMvc) throws Exception {
         return mockMvc.perform(post(url)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(content, objectMapper)));
+                .content(toJson(content)));
     }
 
-    private static String toJson(Object requestBody, ObjectMapper objectMapper) throws JsonProcessingException {
+    private static String toJson(Object requestBody) throws JsonProcessingException {
         return objectMapper.writeValueAsString(requestBody);
     }
 }
