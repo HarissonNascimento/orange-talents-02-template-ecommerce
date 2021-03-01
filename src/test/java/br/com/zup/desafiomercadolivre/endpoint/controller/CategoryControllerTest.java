@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -23,8 +25,7 @@ import static br.com.zup.desafiomercadolivre.util.RequisitionBuilder.postRequest
 import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.*;
 
 @SpringBootTest
 @AutoConfigureDataJpa
@@ -32,6 +33,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Transactional
 @ActiveProfiles("test")
 @DisplayName("Category Controller Test")
+@WithUserDetails("email@test.com")
 class CategoryControllerTest {
 
     private final String URL_CATEGORY_REGISTER_NEW = "/category/register-new";
@@ -51,11 +53,11 @@ class CategoryControllerTest {
 
         assertEquals(OK.value(), resultActions.andReturn().getResponse().getStatus());
 
-        List<?> categorys = findAll(Category.class, entityManager);
+        List<?> categories = findAll(Category.class, entityManager);
 
-        assertEquals(1, categorys.size());
+        assertEquals(1, categories.size());
 
-        Category category = (Category) categorys.get(0);
+        Category category = (Category) categories.get(0);
 
         assertEquals(requestBody.getName(), category.getName());
         assertNull(category.getMotherCategory());
@@ -74,11 +76,11 @@ class CategoryControllerTest {
 
         assertEquals(OK.value(), resultActions.andReturn().getResponse().getStatus());
 
-        List<?> categorys = findAll(Category.class, entityManager);
+        List<?> categories = findAll(Category.class, entityManager);
 
-        assertEquals(2, categorys.size());
+        assertEquals(2, categories.size());
 
-        Category category = (Category) categorys.get(1);
+        Category category = (Category) categories.get(1);
 
         assertEquals(requestBody.getName(), category.getName());
         assertEquals(requestBody.getMotherCategoryId(), category.getMotherCategory().getId());
@@ -95,9 +97,9 @@ class CategoryControllerTest {
 
         assertBadRequestInvalidCategory(requestBody);
 
-        List<?> categorys = findAll(Category.class, entityManager);
+        List<?> categories = findAll(Category.class, entityManager);
 
-        assertEquals(1, categorys.size());
+        assertEquals(1, categories.size());
     }
 
     @Test
@@ -118,6 +120,17 @@ class CategoryControllerTest {
         CategoryPostRequestBody requestBody = new CategoryPostRequestBody(category.getName(), null);
 
         assertBadRequestInvalidCategory(requestBody);
+    }
+
+    @Test
+    @DisplayName("Create new category, return 403 status code when unauthorized user submit request")
+    @WithAnonymousUser
+    void createNewCategory_Return403StatusCode_WhenUnauthorizedUserSubmitRequest() throws Exception {
+        CategoryPostRequestBody requestBody = new CategoryPostRequestBody("Mother Category", null);
+
+        ResultActions resultActions = postRequest(URL_CATEGORY_REGISTER_NEW, requestBody, mockMvc);
+
+        assertEquals(FORBIDDEN.value(), resultActions.andReturn().getResponse().getStatus());
     }
 
     private void assertBadRequestInvalidCategory(CategoryPostRequestBody requestBody) throws Exception {

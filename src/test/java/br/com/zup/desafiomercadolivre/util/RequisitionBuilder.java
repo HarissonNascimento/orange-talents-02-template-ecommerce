@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 public class RequisitionBuilder {
@@ -14,6 +15,13 @@ public class RequisitionBuilder {
 
     public static ResultActions postRequest(String url, Object content, MockMvc mockMvc) throws Exception {
         return mockMvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(content)));
+    }
+
+    public static ResultActions postRequestWithCsrf(String url, Object content, MockMvc mockMvc) throws Exception {
+        return mockMvc.perform(post(url)
+                .with(csrf().asHeader())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(content)));
     }

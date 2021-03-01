@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static br.com.zup.desafiomercadolivre.util.EntityManagerUtil.findAll;
-import static br.com.zup.desafiomercadolivre.util.EntityManagerUtil.findFirst;
+import static br.com.zup.desafiomercadolivre.util.EntityManagerUtil.findByString;
 import static br.com.zup.desafiomercadolivre.util.RequisitionBuilder.postRequest;
 import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -53,18 +53,17 @@ class UserControllerTest {
 
         assertEquals(OK.value(), resultActions.andReturn().getResponse().getStatus());
 
-        List<?> users = findAll(User.class, entityManager);
+        User user = (User) findByString(User.class, requestBody.getEmail(), "email", entityManager)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
 
-        assertEquals(1, users.size());
-
-        User user = (User) users.get(0);
-
-        assertEquals(requestBody.getEmail(), user.getEmail());
+        assertEquals(user.getUsername(), requestBody.getEmail());
     }
 
     @Test
     @DisplayName("Create new user, return status code 400 and dont persist new user in database if given invalid user")
     void createNewUser_Return400StatusCodeAndDontPersistNewUser_IfGivenInvalidUser() throws Exception {
+        int size = findAll(User.class, entityManager).size();
+
         UserPostRequestBody requestBody = new UserPostRequestBody("", "");
 
         ResultActions resultActions = postRequest(URL_USER_REGISTER_NEW, requestBody, mockMvc);
@@ -73,7 +72,7 @@ class UserControllerTest {
 
         List<?> users = findAll(User.class, entityManager);
 
-        assertEquals(0, users.size());
+        assertEquals(size, users.size());
     }
 
     @Test
@@ -127,7 +126,7 @@ class UserControllerTest {
 
         assertEquals(OK.value(), resultActions.andReturn().getResponse().getStatus());
 
-        User user = (User) findFirst(User.class, entityManager)
+        User user = (User) findByString(User.class, requestBody.getEmail(), "email", entityManager)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
 
         assertFalse(user.getRegistrationTime().isAfter(LocalDateTime.now()));
