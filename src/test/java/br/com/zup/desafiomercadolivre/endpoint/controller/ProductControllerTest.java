@@ -1,10 +1,8 @@
 package br.com.zup.desafiomercadolivre.endpoint.controller;
 
-import br.com.zup.desafiomercadolivre.model.domain.Category;
-import br.com.zup.desafiomercadolivre.model.domain.Characteristic;
-import br.com.zup.desafiomercadolivre.model.domain.Product;
-import br.com.zup.desafiomercadolivre.model.domain.User;
+import br.com.zup.desafiomercadolivre.model.domain.*;
 import br.com.zup.desafiomercadolivre.model.request.CharacteristicPostRequestBody;
+import br.com.zup.desafiomercadolivre.model.request.OpinionPostRequestBody;
 import br.com.zup.desafiomercadolivre.model.request.ProductPostRequestBody;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -47,9 +45,10 @@ import static org.springframework.http.HttpStatus.*;
 @DisplayName("Product Controller Test")
 @WithUserDetails("email@test.com")
 class ProductControllerTest {
-
+    private final String LOGGED_USER_EMAIL = "email@test.com";
     private final String URL_PRODUCT_REGISTER_NEW = "/product/register-new";
     private final String URL_PRODUCT_ADD_IMAGES = "/product/{id}/images";
+    private final String URL_PRODUCT_USER_OPINION = "/product/{id}/opinion";
     private final Category category = new Category("TestCategory", null);
 
     @Autowired
@@ -205,7 +204,7 @@ class ProductControllerTest {
     @DisplayName("Add images, return 200 status code when successful")
     void addImages_Return200StatusCode_WhenSuccessful() throws Exception {
 
-        Product product = persistProductWithUserByEmail("email@test.com");
+        Product product = persistProductWithUserByEmail(LOGGED_USER_EMAIL);
 
         MockMultipartFile multipartFile = new MockMultipartFile("fakeImagesTest", "fakeImagesTest.png", "", "fakeImageBytes".getBytes());
 
@@ -219,13 +218,81 @@ class ProductControllerTest {
     @WithUserDetails("email2@test.com")
     void addImages_Return400StatusCode_IfUserIsNotAuthorized() throws Exception {
 
-        Product product = persistProductWithUserByEmail("email@test.com");
+        Product product = persistProductWithUserByEmail(LOGGED_USER_EMAIL);
 
         MockMultipartFile multipartFile = new MockMultipartFile("fakeImagesTest", "fakeImagesTest.png", "", "fakeImageBytes".getBytes());
 
         ResultActions resultActions = postImages(URL_PRODUCT_ADD_IMAGES, product.getId(), mockMvc, multipartFile.getBytes());
 
         assertEquals(FORBIDDEN.value(), resultActions.andReturn().getResponse().getStatus());
+    }
+
+    @Test
+    @DisplayName("New user opinion, return 200 status code and persist new opinion if given valid opinion")
+    void newUserOpinion_Return200StatusCodeAndPersistNewOpinion_IfGivenValidOpinion() throws Exception {
+
+        List<?> all = findAll(Opinion.class, entityManager);
+        int size = all.size();
+
+        Product product = persistProductWithUserByEmail(LOGGED_USER_EMAIL);
+
+        OpinionPostRequestBody requestBody = new OpinionPostRequestBody(5, "TestOpinion", "DescriptionTestOpinion");
+
+        ResultActions resultActions = postRequest(URL_PRODUCT_USER_OPINION, product.getId(), requestBody, mockMvc);
+
+        assertEquals(OK.value(), resultActions.andReturn().getResponse().getStatus());
+
+        all = findAll(Opinion.class, entityManager);
+
+        assertEquals(size + 1, all.size());
+
+        Opinion opinion = (Opinion) all.get(0);
+
+        assertAll(
+                () -> assertEquals(requestBody.getRate(), opinion.getRate()),
+                () -> assertEquals(requestBody.getTitle(), opinion.getTitle()),
+                () -> assertEquals(requestBody.getDescription(), opinion.getDescription())
+        );
+    }
+
+    @Test
+    @DisplayName("New user opinion, return 400 status code if given rate less than 1")
+    void newUserOpinion_Return400StatusCode_IfGivenRateLessThan1() throws Exception {
+        OpinionPostRequestBody requestBody = new OpinionPostRequestBody(0, "TestOpinion", "DescriptionTestOpinion");
+
+        assertBadRequest(requestBody);
+    }
+
+    @Test
+    @DisplayName("New user opinion, return 400 status code if given rate greater than 5")
+    void newUserOpinion_Return400StatusCode_IfGivenRateGreaterThan5() throws Exception {
+        OpinionPostRequestBody requestBody = new OpinionPostRequestBody(6, "TestOpinion", "DescriptionTestOpinion");
+
+        assertBadRequest(requestBody);
+    }
+
+    @Test
+    @DisplayName("New user opinion, return 400 status code if given blank title")
+    void newUserOpinion_Return400StatusCode_IfGivenBlankTitle() throws Exception {
+        OpinionPostRequestBody requestBody = new OpinionPostRequestBody(5, "", "DescriptionTestOpinion");
+
+        assertBadRequest(requestBody);
+    }
+
+    @Test
+    @DisplayName("New user opinion, return 400 status code if given description greater than 500")
+    void newUserOpinion_Return400StatusCode_IfGivenDescriptionGreaterThan500() throws Exception {
+        String bigString =
+                "---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|" +
+                        "---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|" +
+                        "---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|" +
+                        "---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|" +
+                        "---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|" +
+                        "---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|";
+
+        OpinionPostRequestBody requestBody = new OpinionPostRequestBody(5, "", bigString);
+
+        assertBadRequest(requestBody);
     }
 
     private Product persistProductWithUserByEmail(String email) {
@@ -239,6 +306,18 @@ class ProductControllerTest {
 
         entityManager.persist(product);
         return product;
+    }
+
+    private void assertBadRequest(OpinionPostRequestBody requestBody) throws Exception {
+        Product product = persistProductWithUserByEmail(LOGGED_USER_EMAIL);
+
+        ResultActions resultActions = postRequest(URL_PRODUCT_USER_OPINION, product.getId(), requestBody, mockMvc);
+
+        assertEquals(BAD_REQUEST.value(), resultActions.andReturn().getResponse().getStatus());
+
+        Class<? extends Exception> aClass = requireNonNull(resultActions.andReturn().getResolvedException()).getClass();
+
+        assertEquals(MethodArgumentNotValidException.class, aClass);
     }
 
     private void assertBadRequest(ProductPostRequestBody requestBody) throws Exception {

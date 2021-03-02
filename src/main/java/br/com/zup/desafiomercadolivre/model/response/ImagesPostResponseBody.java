@@ -5,7 +5,7 @@ import br.com.zup.desafiomercadolivre.model.domain.Product;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class NewImagesPostResponseBody {
+public class ImagesPostResponseBody {
     private Long productId;
     private Long userId;
     private Set<ProductImagePostResponseBody> images;
@@ -22,7 +22,7 @@ public class NewImagesPostResponseBody {
         return images;
     }
 
-    public NewImagesPostResponseBody toNewImagesPostResponseBody(Product product) {
+    public ImagesPostResponseBody toImagesPostResponseBody(Product product) {
         this.productId = product.getId();
         this.userId = product.getUser().getId();
         this.images = product.getImages().stream()

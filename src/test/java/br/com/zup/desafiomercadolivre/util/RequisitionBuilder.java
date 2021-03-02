@@ -25,6 +25,12 @@ public class RequisitionBuilder {
                 .content(toJson(content)));
     }
 
+    public static ResultActions postRequest(String url, Object uriVars, Object content, MockMvc mockMvc) throws Exception {
+        return mockMvc.perform(post(url, uriVars)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(content)));
+    }
+
     public static ResultActions postRequestWithCsrf(String url, Object content, MockMvc mockMvc) throws Exception {
         return mockMvc.perform(post(url)
                 .with(csrf().asHeader())

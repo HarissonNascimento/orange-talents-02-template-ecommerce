@@ -7,7 +7,7 @@ import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewImagesPostRequestBody {
+public class ImagesPostRequestBody {
 
     @Size(min = 1)
     @NotNull

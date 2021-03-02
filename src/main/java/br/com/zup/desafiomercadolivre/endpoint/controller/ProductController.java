@@ -1,10 +1,13 @@
 package br.com.zup.desafiomercadolivre.endpoint.controller;
 
+import br.com.zup.desafiomercadolivre.model.domain.Opinion;
 import br.com.zup.desafiomercadolivre.model.domain.Product;
 import br.com.zup.desafiomercadolivre.model.domain.User;
-import br.com.zup.desafiomercadolivre.model.request.NewImagesPostRequestBody;
+import br.com.zup.desafiomercadolivre.model.request.ImagesPostRequestBody;
+import br.com.zup.desafiomercadolivre.model.request.OpinionPostRequestBody;
 import br.com.zup.desafiomercadolivre.model.request.ProductPostRequestBody;
-import br.com.zup.desafiomercadolivre.model.response.NewImagesPostResponseBody;
+import br.com.zup.desafiomercadolivre.model.response.ImagesPostResponseBody;
+import br.com.zup.desafiomercadolivre.model.response.OpinionPostResponseBody;
 import br.com.zup.desafiomercadolivre.model.response.ProductPostResponseBody;
 import br.com.zup.desafiomercadolivre.util.Uploader;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,13 +45,40 @@ public class ProductController {
 
     @PostMapping("/{id}/images")
     @Transactional
-    public NewImagesPostResponseBody addImages(@PathVariable("id") Long id,
-                                               @Valid NewImagesPostRequestBody newImagesPostRequestBody,
-                                               @AuthenticationPrincipal User user) {
+    public ImagesPostResponseBody addImages(@PathVariable("id") Long id,
+                                            @Valid ImagesPostRequestBody imagesPostRequestBody,
+                                            @AuthenticationPrincipal User user) {
 
+        Product product = findProductByIdAndUserId(id, user.getId());
+
+        Set<String> links = uploaderFake.send(imagesPostRequestBody.getImages());
+
+        product.associateImages(links);
+
+        entityManager.merge(product);
+
+        return new ImagesPostResponseBody().toImagesPostResponseBody(product);
+    }
+
+    @PostMapping("/{id}/opinion")
+    @Transactional
+    public OpinionPostResponseBody newUserOpinion(@PathVariable("id") Long id,
+                                                  @RequestBody @Valid OpinionPostRequestBody opinionPostRequestBody,
+                                                  @AuthenticationPrincipal User user) {
+
+        Product product = findProductByIdAndUserId(id, user.getId());
+
+        Opinion opinion = opinionPostRequestBody.toOpinion(product, user);
+
+        entityManager.persist(opinion);
+
+        return new OpinionPostResponseBody().toOpinionPostResponseBody(opinion);
+    }
+
+    private Product findProductByIdAndUserId(Long id, Long userId) {
         TypedQuery<Product> query = entityManager.createQuery("select p from Product p join p.user u where p.id = :idProduct and u.id = :idUser", Product.class);
         query.setParameter("idProduct", id);
-        query.setParameter("idUser", user.getId());
+        query.setParameter("idUser", userId);
 
         List<Product> resultList = query.getResultList();
 
@@ -56,14 +86,6 @@ public class ProductController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Your not authorized to execute this request");
         }
 
-        Product product = resultList.get(0);
-
-        Set<String> links = uploaderFake.send(newImagesPostRequestBody.getImages());
-
-        product.associateImages(links);
-
-        entityManager.merge(product);
-
-        return new NewImagesPostResponseBody().toNewImagesPostResponseBody(product);
+        return resultList.get(0);
     }
 }
