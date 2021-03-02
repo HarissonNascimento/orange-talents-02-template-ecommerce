@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -12,6 +13,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 public class RequisitionBuilder {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    public static ResultActions postImages(String url, Long productId, MockMvc mockMvc, byte[] archiveBytes) throws Exception {
+        return mockMvc.perform(MockMvcRequestBuilders.multipart(url, productId)
+                .file("images", archiveBytes));
+    }
 
     public static ResultActions postRequest(String url, Object content, MockMvc mockMvc) throws Exception {
         return mockMvc.perform(post(url)
