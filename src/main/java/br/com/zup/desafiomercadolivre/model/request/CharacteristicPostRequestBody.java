@@ -1,5 +1,6 @@
 package br.com.zup.desafiomercadolivre.model.request;
 
+import br.com.zup.desafiomercadolivre.annotation.UniqueValue;
 import br.com.zup.desafiomercadolivre.model.domain.Characteristic;
 
 import javax.validation.constraints.NotBlank;
@@ -8,6 +9,7 @@ import javax.validation.constraints.Size;
 public class CharacteristicPostRequestBody {
 
     @NotBlank
+    @UniqueValue(domainClass = Characteristic.class, fieldName = "name", message = "The name already taken!")
     private String name;
     @NotBlank
     @Size(max = 1000)
