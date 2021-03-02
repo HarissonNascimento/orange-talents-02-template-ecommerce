@@ -225,7 +225,7 @@ class ProductControllerTest {
 
         ResultActions resultActions = postImages(URL_PRODUCT_ADD_IMAGES, product.getId(), mockMvc, multipartFile.getBytes());
 
-        assertEquals(BAD_REQUEST.value(), resultActions.andReturn().getResponse().getStatus());
+        assertEquals(FORBIDDEN.value(), resultActions.andReturn().getResponse().getStatus());
     }
 
     private Product persistProductWithUserByEmail(String email) {

@@ -53,7 +53,7 @@ public class ProductController {
         List<Product> resultList = query.getResultList();
 
         if (resultList.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product does not exist our your not authorized to execute this request");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Your not authorized to execute this request");
         }
 
         Product product = resultList.get(0);
