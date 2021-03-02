@@ -22,6 +22,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -66,7 +67,8 @@ public class ProductController {
                                                   @RequestBody @Valid OpinionPostRequestBody opinionPostRequestBody,
                                                   @AuthenticationPrincipal User user) {
 
-        Product product = findProductByIdAndUserId(id, user.getId());
+        Product product = Optional.ofNullable(entityManager.find(Product.class, id))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST));
 
         Opinion opinion = opinionPostRequestBody.toOpinion(product, user);
 
