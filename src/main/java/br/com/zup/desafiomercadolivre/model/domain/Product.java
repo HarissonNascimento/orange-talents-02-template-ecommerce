@@ -4,6 +4,7 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,6 +36,8 @@ public class Product {
     private LocalDateTime registrationTime;
     @OneToMany(mappedBy = "product", cascade = CascadeType.MERGE)
     private Set<ProductImage> images = new HashSet<>();
+    @OneToMany(mappedBy = "product", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    private List<Question> questions = new ArrayList<>();
 
     public Product(@NotBlank String name,
                    @NotNull @PositiveOrZero Integer amount,
@@ -98,6 +101,10 @@ public class Product {
         return images;
     }
 
+    public List<Question> getQuestions() {
+        return questions;
+    }
+
     public void associateImages(Set<String> links) {
 
         Set<ProductImage> productImages = links.stream()
@@ -105,5 +112,10 @@ public class Product {
                 .collect(Collectors.toSet());
 
         this.images.addAll(productImages);
+    }
+
+    public void associateQuestion(Question question) {
+
+        this.questions.add(question);
     }
 }
