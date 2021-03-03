@@ -7,12 +7,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 public class RequisitionBuilder {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    public static ResultActions getRequest(String url, Long productId, MockMvc mockMvc) throws Exception {
+        return mockMvc.perform(get(url, productId));
+    }
 
     public static ResultActions postImages(String url, Long productId, MockMvc mockMvc, byte[] archiveBytes) throws Exception {
         return mockMvc.perform(multipart(url, productId)

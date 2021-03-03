@@ -1,5 +1,10 @@
 package br.com.zup.desafiomercadolivre.model.domain;
 
+import br.com.zup.desafiomercadolivre.model.response.CharacteristicGetResponseBody;
+import br.com.zup.desafiomercadolivre.model.response.OpinionPostResponseBody;
+import br.com.zup.desafiomercadolivre.model.response.ProductDetailsGetResponseBody;
+import br.com.zup.desafiomercadolivre.model.response.QuestionPostResponseBody;
+
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
@@ -9,6 +14,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.averagingDouble;
 
 @Entity
 public class Product {
@@ -38,6 +45,8 @@ public class Product {
     private Set<ProductImage> images = new HashSet<>();
     @OneToMany(mappedBy = "product", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private List<Question> questions = new ArrayList<>();
+    @OneToMany(mappedBy = "product")
+    private List<Opinion> opinions = new ArrayList<>();
 
     public Product(@NotBlank String name,
                    @NotNull @PositiveOrZero Integer amount,
@@ -117,5 +126,27 @@ public class Product {
     public void associateQuestion(Question question) {
 
         this.questions.add(question);
+    }
+
+    public ProductDetailsGetResponseBody getDetails() {
+        List<String> imageLinks = this.images.stream().map(ProductImage::getLink).collect(Collectors.toList());
+
+        List<CharacteristicGetResponseBody> characteristics = this.characteristicList.stream()
+                .map(c -> new CharacteristicGetResponseBody().toCharacteristicGetResponseBody(c))
+                .collect(Collectors.toList());
+
+        List<OpinionPostResponseBody> opinionsList = this.opinions.stream()
+                .map(o -> new OpinionPostResponseBody().toOpinionPostResponseBody(o))
+                .collect(Collectors.toList());
+
+        List<QuestionPostResponseBody> questionsList = this.questions.stream()
+                .map(q -> new QuestionPostResponseBody().toQuestionPostResponseBody(q))
+                .collect(Collectors.toList());
+
+        Double rateAverage = this.opinions.stream().collect(averagingDouble(Opinion::getRate));
+
+        long totalOpinions = this.opinions.size();
+
+        return new ProductDetailsGetResponseBody(imageLinks, this.name, this.price, characteristics, this.description, rateAverage, totalOpinions, opinionsList, questionsList);
     }
 }
