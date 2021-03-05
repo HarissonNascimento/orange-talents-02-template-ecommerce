@@ -36,11 +36,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/user/register-new").permitAll()
-                //start-h2
-                .antMatchers("/").permitAll()
-                .antMatchers("/h2-console").permitAll()
-                .antMatchers("/h2-console/**").permitAll()
-                //end-h2
+                .antMatchers("/pagseguro-return/**").permitAll()
+                .antMatchers("/paypal-return/**").permitAll()
+                .antMatchers("/invoice").permitAll()
+                .antMatchers("/ranking").permitAll()
                 .antMatchers(HttpMethod.POST, "/auth/authenticate").permitAll()
                 .anyRequest().authenticated()
                 .and()
@@ -50,9 +49,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                //start-h2
-                .headers().frameOptions().disable().and()
-                //end-h2
                 .addFilterBefore(new JwtAuthenticationFilter(tokenService, entityManager), UsernamePasswordAuthenticationFilter.class);
 
     }

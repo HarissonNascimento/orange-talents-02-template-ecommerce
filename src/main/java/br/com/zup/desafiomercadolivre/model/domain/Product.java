@@ -4,6 +4,7 @@ import br.com.zup.desafiomercadolivre.model.response.CharacteristicGetResponseBo
 import br.com.zup.desafiomercadolivre.model.response.OpinionPostResponseBody;
 import br.com.zup.desafiomercadolivre.model.response.ProductDetailsGetResponseBody;
 import br.com.zup.desafiomercadolivre.model.response.QuestionPostResponseBody;
+import org.springframework.util.Assert;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
@@ -47,6 +48,8 @@ public class Product {
     private List<Question> questions = new ArrayList<>();
     @OneToMany(mappedBy = "product")
     private List<Opinion> opinions = new ArrayList<>();
+    @OneToMany(mappedBy = "product")
+    private List<Purchase> purchases = new ArrayList<>();
 
     public Product(@NotBlank String name,
                    @NotNull @PositiveOrZero Integer amount,
@@ -148,5 +151,16 @@ public class Product {
         long totalOpinions = this.opinions.size();
 
         return new ProductDetailsGetResponseBody(imageLinks, this.name, this.price, characteristics, this.description, rateAverage, totalOpinions, opinionsList, questionsList);
+    }
+
+    public boolean isAmountReducible(@PositiveOrZero Integer amount) {
+        Assert.isTrue(amount>0, "[BUG] The amount must be greater than zero! " + amount);
+        return amount <= this.amount;
+    }
+
+    public void slaughterStock(Integer amount) {
+        if (isAmountReducible(amount)){
+            this.amount-=amount;
+        }
     }
 }
